@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public GameTimer gameTimer;
     public MineMap mineMap;
+    public int mineLevel = 0;
 
     private void Awake()
     {
