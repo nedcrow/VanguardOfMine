@@ -13,6 +13,7 @@ using UnityEngine;
 /// </summary>
 public class ArmySpawner : MonoBehaviour
 {
+    [SerializeField]
     public GameObject currentArmyPrefab;
     public List<GameObject> restedArmies = new List<GameObject>();
     public List<GameObject> activatedArmies = new List<GameObject>();
@@ -20,7 +21,7 @@ public class ArmySpawner : MonoBehaviour
 
     public void Start()
     {
-        
+        CursorComponent.OnClickTile_Left += ((GameObject go) => { SpawnArmyTo(go.transform.position + (Vector3.up * 2)); });
     }
 
     public void Init(GameObject prefab)
@@ -35,7 +36,7 @@ public class ArmySpawner : MonoBehaviour
 
     public void SpawnArmyTo(Vector3 pos)
     {
-        GameObjct army = SpawnArmy();
+        GameObject army = SpawnArmy();
         army.transform.localPosition = pos;
     }
 
@@ -45,15 +46,15 @@ public class ArmySpawner : MonoBehaviour
         if(restedArmies.Count > 0)
         {
             army = restedArmies[^1];
-            army.transform.SetActive(true);
+            army.SetActive(true);
             activatedArmies.Add(army);
             restedArmies.RemoveAt(restedArmies.Count - 1);
         }
         else
         {
             army = GameObject.Instantiate(currentArmyPrefab);
+            army.SetActive(true);
             army.transform.parent = transform;
-            army.transform.SetActive(true);
             //army.GetComponent<CharacterBase>().Init(); // 캐릭터 타입 지정과 함께 외형 변경 등 초기화
         }
         return army;
@@ -61,7 +62,7 @@ public class ArmySpawner : MonoBehaviour
 
     public void RIP_For(GameObject target)
     {
-        int objectIndex = objects.FindIndex(gameObject => string.Equals(target.name, gameObject.name));
+        int objectIndex = activatedArmies.FindIndex(gameObject => string.Equals(target.name, gameObject.name));
         if (objectIndex >= 0)
         {
             restedArmies.Add(activatedArmies[objectIndex]);
