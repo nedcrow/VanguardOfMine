@@ -19,7 +19,5 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1;
 
         gameTimer.StartCountDown(72, 0.01f);
-
-        mineMap.Spawn(new Vector2Int(16, 16), 10);
     }
 }

@@ -25,13 +25,14 @@ public class TileData
 
 public class TileComponent : MonoBehaviour
 {
+    public GameObject tileMesh;
+    public Vector3 defaultSizeOfCollider = Vector3.one;
+
     TileData tileData;
-    public void SetTileData(TileData tileData) { this.tileData = tileData; }
-    public TileData GetTileData() { return tileData; }
 
     bool wasFlaged = false;
 
-    private void OnTriggerEnter(Collider col)
+    void OnTriggerEnter(Collider col)
     {
         // Áö·Ú Æø¹ß
         CharacterCommon characterComp = col.GetComponent<CharacterCommon>();
@@ -54,15 +55,11 @@ public class TileComponent : MonoBehaviour
         CursorComponent.OnClickTile_Right += OnClickTile_Right;
         CursorComponent.OnClickTile_Mid += OnClickTile_Mid;
 
-        Vector3 sizeOfCollider = GetComponent<BoxCollider>().size;
-        GetComponent<BoxCollider>().size = new Vector3(
-            sizeOfCollider.x * transform.localScale.x,
-            sizeOfCollider.y * transform.localScale.y,
-            sizeOfCollider.z * transform.localScale.z
-            );
-
         wasFlaged = false;
     }
+
+    public void SetTileData(TileData tileData) { this.tileData = tileData; }
+    public TileData GetTileData() { return tileData; }
 
     public void Flag() {
         wasFlaged = true;
@@ -73,6 +70,9 @@ public class TileComponent : MonoBehaviour
         wasFlaged = false;
         // º´»ç ±ÍÈ¯ ¸í·É
     }
+
+    public void ActiveCube() { if (tileMesh != null) tileMesh.SetActive(true); }
+    public void RestCube() { if (tileMesh != null) tileMesh.SetActive(false); }
 
     void OnClickTile_Left(GameObject tileObj)
     {
