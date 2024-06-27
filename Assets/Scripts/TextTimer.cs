@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 public class TextTimer : MonoBehaviour
 {
-    void Awake()
+    void Start()
     {
-        GameTimer.OnTimeChangeEvent += OnChangeTime;        
+        GameManager.instance.gameTimer.OnTimeChangeEvent += OnChangeTime;        
     }
 
     /// <summary>

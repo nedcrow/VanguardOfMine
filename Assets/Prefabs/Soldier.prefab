@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6646442820611377888}
   - component: {fileID: -9118228379978148832}
-  - component: {fileID: 1513137143615492435}
   - component: {fileID: 3851701048279541011}
   m_Layer: 0
   m_Name: Soldier
@@ -44,7 +43,7 @@ Rigidbody:
   m_GameObject: {fileID: 906074513049125708}
   serializedVersion: 4
   m_Mass: 1
-  m_Drag: 0
+  m_Drag: 2
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -60,29 +59,8 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 10
   m_CollisionDetection: 0
---- !u!65 &1513137143615492435
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 906074513049125708}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.6, y: 0.6, z: 0.6}
-  m_Center: {x: 0, y: 0.3, z: 0}
 --- !u!114 &3851701048279541011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96,6 +74,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 1
+  body: {fileID: 6616799893601101409}
 --- !u!1 &6616799893601101409
 GameObject:
   m_ObjectHideFlags: 0
@@ -107,6 +86,7 @@ GameObject:
   - component: {fileID: 9107624428221682397}
   - component: {fileID: 1638673275920530}
   - component: {fileID: 215625686292590803}
+  - component: {fileID: 211358042406096020}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -181,3 +161,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &211358042406096020
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6616799893601101409}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: -0.36, z: 0}

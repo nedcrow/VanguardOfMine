@@ -9,8 +9,8 @@ public class GameTimer : MonoBehaviour
     IEnumerator myCoroutine = null;
 
     public delegate void TimeOver_Del(float lastTime);
-    public static event TimeOver_Del OnTimeOverEvent;
-    public static event TimeOver_Del OnTimeChangeEvent;
+    public event TimeOver_Del OnTimeOverEvent;
+    public event TimeOver_Del OnTimeChangeEvent;
 
     private void OnTimeOver()
     {

@@ -6,6 +6,9 @@ using UnityEngine.UIElements;
 
 public class MineMap : MonoBehaviour
 {
+    public delegate void AfterSpawnMap_Del();
+    public event AfterSpawnMap_Del AfterSpawnMapEvent;
+
     public GameObject tilePrefab;
     public Vector3 tileSize = Vector3.one;
 
@@ -17,10 +20,11 @@ public class MineMap : MonoBehaviour
     List<TileData> activatedTileList = new List<TileData>();
     List<int> mineList;
     Vector3 pivot = Vector3.zero;
+    Vector2Int mapSize = Vector2Int.zero;
 
-    void Awake()
+    void Start()
     {
-        GameTimer.OnTimeOverEvent += GameOver;
+        GameManager.instance.gameTimer.OnTimeOverEvent += GameOver;
     }
 
 
@@ -31,11 +35,14 @@ public class MineMap : MonoBehaviour
 
     public void Spawn(Vector2Int size, int countOfMine)
     {
+        mapSize = size;
+
         int[] aroundIdxArr = {
             -size.x-1, -size.x, -size.x +1, // 좌상단 -> 우상단
             -1, 0, 1, // 좌 -> 우
             size.x - 1, size.x, size.x +1, // 좌하단 -> 우하단
         };
+
         int tileCount = size.x * size.y;
 
         // tile 및 mesh 초기화
@@ -50,7 +57,7 @@ public class MineMap : MonoBehaviour
                 activatedTileGameObjectList.Add(Instantiate(tilePrefab));
             }
         }
-        else if(activatedTileGameObjectList.Count != tileCount)
+        else if(activatedTileGameObjectList.Count < tileCount)
         {
             // 활성 타일이 부족하면 비활성 타일에서 추가
             while(activatedTileGameObjectList.Count < tileCount && restedTileGameObjectList.Count > 0)
@@ -62,67 +69,31 @@ public class MineMap : MonoBehaviour
                 restedTileGameObjectList.RemoveAt(restedTileGameObjectList.Count - 1);
             }
 
-
-            //// 활성중 타일이 있으면 모두 역순으로 비활성화 
-            //if(activatedTileGameObjectList.Count > 0)
-            //{
-            //    int i = activatedTileList.Count;
-            //    while (i > 0)
-            //    {
-            //        restedTileList.Add(activatedTileList[^1]);
-            //        activatedTileList.RemoveAt(activatedTileList.Count - 1);
-
-            //        restedTileGameObjectList.Add(activatedTileGameObjectList[^1]);
-            //        activatedTileGameObjectList.RemoveAt(activatedTileGameObjectList.Count - 1);
-            //        i--;
-            //    }
-            //}
-
-
-            //// restedTile 수량으로 커버되면 새로 안 만듦
-            //if(restedTileList.Count >= tileCount)
-            //{
-            //    for(int i=0; i<tileCount; i++)
-            //    {
-            //        activatedTileList.Add(restedTileList[^1]);
-            //        restedTileList.RemoveAt(restedTileList.Count - 1);
-
-            //        activatedTileGameObjectList.Add(restedTileGameObjectList[^1]);
-            //        restedTileGameObjectList.RemoveAt(restedTileGameObjectList.Count - 1);
-            //    }
-            //}
-            //else
-            //{
-            //    int tempDistance_ = tileCount - restedTileList.Count;
-            //    int restedTileCount = restedTileList.Count;
-            //    for (int i = 0; i < restedTileList.Count; i++)
-            //    {
-            //        activatedTileList.Add(restedTileList[^1]);
-            //        restedTileList.RemoveAt(restedTileList.Count - 1);
-
-            //        activatedTileGameObjectList.Add(restedTileGameObjectList[^1]);
-            //        restedTileGameObjectList.RemoveAt(restedTileGameObjectList.Count - 1);
-            //    }
-            //    for (int i = restedTileCount; i < tileCount; i++)
-            //    {
-            //        TileData tileData = new TileData(i, false, false, 0);
-            //        activatedTileList.Add(tileData);
-
-            //        activatedTileGameObjectList.Add(Instantiate(tilePrefab));
-            //    }
-            //}
-
+            // 그래도 부족하면 추가 생성
             int tempDistance_ = tileCount - activatedTileGameObjectList.Count;
-            while(tempDistance_ > 0)
+            int idx = activatedTileList[^1].idx;
+            while (tempDistance_ > 0)
             {
-                TileData tileData = new TileData(i, false, false, 0);
+                idx += 1;
+                TileData tileData = new TileData(idx, false, false, 0);
                 activatedTileList.Add(tileData);
 
                 activatedTileGameObjectList.Add(Instantiate(tilePrefab));
                 tempDistance_--;
             }
         }
+        else if(activatedTileGameObjectList.Count > tileCount)
+        {
+            // 남는 타일 비활성
+            while (activatedTileGameObjectList.Count > tileCount)
+            {
+                restedTileList.Add(activatedTileList[^1]);
+                activatedTileList.RemoveAt(activatedTileList.Count - 1);
 
+                restedTileGameObjectList.Add(activatedTileGameObjectList[^1]);
+                activatedTileGameObjectList.RemoveAt(activatedTileGameObjectList.Count - 1);
+            }
+        }
 
         // mine
         mineList = new List<int>();
@@ -194,8 +165,19 @@ public class MineMap : MonoBehaviour
             0,
             -mapY
             );
+
+        AfterSpawnMapEvent();
     }
-    // size * y + x
+
+    public Vector2Int GetSize()
+    {
+        return mapSize;
+    }
+
+    public TileComponent GetTileCompAt(int idx)
+    {
+        return activatedTileGameObjectList[idx].GetComponent<TileComponent>();
+    }
 }
 
    
