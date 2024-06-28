@@ -46,10 +46,7 @@ public class TileComponent : MonoBehaviour
         SetTileData(tileData);
         transform.tag = "Tile";
 
-        List<Material> mats = new List<Material>();
-        mats.AddRange(tileMesh.GetComponent<MeshRenderer>().materials);
-        mats[0].color = Color.white;
-        tileMesh.GetComponent<MeshRenderer>().SetMaterials(mats);
+        ChangeColor(Color.white);
 
         opened = false;
         wasFlaged = false;
@@ -130,31 +127,39 @@ public class TileComponent : MonoBehaviour
             int sizeY = GameManager.instance.mineMap.GetSize().y;
             int[] aroundIdxArr = {-sizeX, sizeX, -1, 1}; // »óÇÏÁÂ¿ì
 
-            bool isEdgeHorizon = tileData.idx % sizeX == 0 || (tileData.idx + 1) % sizeX == 0 ? true : false;
-            bool isEdgeVertical = tileData.idx % sizeY == 0 || (tileData.idx + 1) % sizeY == 0 ? true : false;
-            bool isEdge = isEdgeHorizon || isEdgeVertical || tileData.idx == 0 || tileData.idx == sizeX * sizeY - 1;
+            bool isEdgeHorizonL = tileData.idx % sizeX == 0 ? true : false;
+            bool isEdgeHorizonR = (tileData.idx - sizeX + 1) % sizeX == 0 ? true : false;
+            bool isEdgeVerticalT = tileData.idx < sizeX ? true : false;
+            bool isEdgeVerticalD = tileData.idx < sizeX * sizeY && tileData.idx > sizeX * sizeY - sizeX ? true : false;
 
-            List<Material> mats = new List<Material>();
-            mats.AddRange(tileMesh.GetComponent<MeshRenderer>().materials);
-            mats[0].color = Color.gray;
-            tileMesh.GetComponent<MeshRenderer>().SetMaterials(mats);
+            ChangeColor(Color.gray);
 
             if (tileData.nearbyMineCount == 0)
             {
-                if (!isEdge)
+                foreach (int weight in aroundIdxArr)
                 {
-                    
-
-                    foreach (int weight in aroundIdxArr)
+                    int nearbyIdx = tileData.idx + weight;
+                    if (nearbyIdx > -1 && nearbyIdx < sizeX * sizeY)
                     {
-                        int nearbyIdx = tileData.idx + weight;
-                        if (nearbyIdx > -1 && nearbyIdx < sizeX * sizeY)
+                        bool isPass = (isEdgeHorizonL && nearbyIdx == tileData.idx - 1)
+                            || (isEdgeHorizonR && nearbyIdx == tileData.idx + 1)
+                            || (isEdgeVerticalT && nearbyIdx == tileData.idx - sizeX)
+                            || (isEdgeVerticalD && nearbyIdx == tileData.idx + sizeX);
+                        if (!isPass)
                         {
                             GameManager.instance.mineMap.GetTileCompAt(nearbyIdx).DetectMine(currentWeight);
                         }
                     }
-                }                
+                }
             }
         }
+    }
+
+    public void ChangeColor(Color color)
+    {
+        List<Material> mats = new List<Material>();
+        mats.AddRange(tileMesh.GetComponent<MeshRenderer>().materials);
+        mats[0].color = color;
+        tileMesh.GetComponent<MeshRenderer>().SetMaterials(mats);
     }
 }
