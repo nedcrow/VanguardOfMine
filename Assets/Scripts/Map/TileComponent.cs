@@ -1,38 +1,18 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
-public class TileData
-{
-    public TileData(
-        int idx,
-        bool bGotMine,
-        bool bActivated,
-        int nearByMineCount
-    )
-    {
-        this.idx = idx;
-        this.bHasMine = bGotMine;
-        this.bActivated = bActivated;
-        this.nearbyMineCount = nearByMineCount;
-    }
-
-    public int idx;
-    public bool bHasMine;
-    public bool bActivated;
-    public int nearbyMineCount;
-}
 
 public class TileComponent : MonoBehaviour
 {
     public GameObject tileMesh;
     public Vector3 defaultSizeOfCollider = Vector3.one;
-    public TMPro.TextMeshProUGUI text;
+    public TextMeshProUGUI text;
+    public EMineType mineType;
     public bool opened = false;
     public bool wasFlaged = false;
 
     TileData tileData;
+    Vector2Int tilePosition;
 
     void OnTriggerEnter(Collider col)
     {        
@@ -67,6 +47,15 @@ public class TileComponent : MonoBehaviour
     public void SetTileData(TileData tileData) { this.tileData = tileData; }
     public TileData GetTileData() { return tileData; }
 
+    public void SetTilePosition(Vector2Int pos) {
+        tilePosition = pos;
+    }
+
+    public Vector2Int GetTilePosition()
+    {
+        return tilePosition;
+    }
+
     public void Flag() {
         wasFlaged = true;
     }
@@ -80,33 +69,6 @@ public class TileComponent : MonoBehaviour
     public void ActiveCube() { if (tileMesh != null) tileMesh.SetActive(true); }
     public void RestCube() { if (tileMesh != null) tileMesh.SetActive(false); }
 
-    //void OnClickTile_Left(GameObject tileObj)
-    //{
-    //    if(tileObj.name == gameObject.name) {
-
-    //        // ¼Ò³ª º´»ç È£Ãâ            
-    //    }
-    //}
-
-    //void OnClickTile_Right(GameObject tileObj)
-    //{
-    //    if (tileObj.name == gameObject.name)
-    //    {
-    //        Debug.Log("right clicked " + gameObject.name);
-    //        // ³» À§Ä¡¿¡ ±ê¹ß º´ È£Ãâ
-    //    }
-    //}
-
-    //void OnClickTile_Mid(GameObject tileObj)
-    //{
-    //    if(tileObj.name == gameObject.name)
-    //    {
-    //        Debug.Log("mid clicked " + gameObject.name);
-    //        // ¿­¸° Ä­ÀÌ¸é ÁÖº¯ Å½»ö(ÁÖº¯ 8Ä­ Áß ±ê¹ßÀÌ ¾ø´Â ¹Ì°ø°³ Ä­À» ¸ðµÎ ¿­¾î¶ó)
-    //        // ´ÝÈù Ä­ÀÌ¸é ÀÌº¥Æ® ¾øÀ½
-    //    }
-    //}
-
     public void DetectMine(int currentWeight)
     {
         if (opened || wasFlaged) return;
@@ -115,17 +77,21 @@ public class TileComponent : MonoBehaviour
 
         if (tileData.bHasMine)
         {
-            bool isBoomWeight = currentWeight >= GameManager.instance.mineLevel;
-            if (isBoomWeight) { }
-            // ¹üÀ§ Æø¹ß ÀÌº¥Æ®
+            //bool isBoomWeight = currentWeight >= (int) GameManager.instance.mineLevel;
+            //if (isBoomWeight) {
+            //}
+            ChangeColor(Color.red);
         }
         else{
-            //Debug.Log(tileData.nearbyMineCount);
             text.transform.gameObject.SetActive(true);
 
             int sizeX = GameManager.instance.mineMap.GetSize().x;
             int sizeY = GameManager.instance.mineMap.GetSize().y;
-            int[] aroundIdxArr = {-sizeX, sizeX, -1, 1}; // »óÇÏÁÂ¿ì
+            int[] aroundIdxArr = {
+                -sizeX-1, - sizeX, -sizeX+1, // ÁÂ»ó -> ¿ì»ó
+                -1, 1, // ÁÂ¿ì
+                sizeX-1, sizeX, sizeX+1  // ÁÂÇÏ -> ¿ìÇÏ
+                };
 
             bool isEdgeHorizonL = tileData.idx % sizeX == 0 ? true : false;
             bool isEdgeHorizonR = (tileData.idx - sizeX + 1) % sizeX == 0 ? true : false;
@@ -141,10 +107,10 @@ public class TileComponent : MonoBehaviour
                     int nearbyIdx = tileData.idx + weight;
                     if (nearbyIdx > -1 && nearbyIdx < sizeX * sizeY)
                     {
-                        bool isPass = (isEdgeHorizonL && nearbyIdx == tileData.idx - 1)
-                            || (isEdgeHorizonR && nearbyIdx == tileData.idx + 1)
-                            || (isEdgeVerticalT && nearbyIdx == tileData.idx - sizeX)
-                            || (isEdgeVerticalD && nearbyIdx == tileData.idx + sizeX);
+                        bool isPass = (isEdgeHorizonL && (nearbyIdx == tileData.idx - 1 || nearbyIdx == tileData.idx - sizeX - 1 || nearbyIdx == tileData.idx + sizeX - 1))
+                            || (isEdgeHorizonR && (nearbyIdx == tileData.idx + 1 || nearbyIdx == tileData.idx - sizeX + 1 || nearbyIdx == tileData.idx + sizeX + 1))
+                            || (isEdgeVerticalT && (nearbyIdx == tileData.idx - sizeX || nearbyIdx == tileData.idx - sizeX - 1 || nearbyIdx == tileData.idx - sizeX + 1))
+                            || (isEdgeVerticalD && (nearbyIdx == tileData.idx + sizeX || nearbyIdx == tileData.idx + sizeX - 1 || nearbyIdx == tileData.idx + sizeX + 1));
                         if (!isPass)
                         {
                             GameManager.instance.mineMap.GetTileCompAt(nearbyIdx).DetectMine(currentWeight);

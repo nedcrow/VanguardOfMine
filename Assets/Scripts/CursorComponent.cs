@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
+
 
 
 [ExecuteInEditMode]
@@ -19,7 +22,8 @@ public class CursorComponent : MonoBehaviour
     [SerializeField]
     bool released_lateUpdate = false;
 
-    RaycastHit Hit;
+    List<RaycastHit> hitList;
+    RaycastHit hit;
     Ray ray;
 
     void Awake()
@@ -62,8 +66,21 @@ public class CursorComponent : MonoBehaviour
     void CastTile(ref bool success)
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        bool hitTile = Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.CompareTag("Tile");
-        if (!hitTile)
+        hitList = new List<RaycastHit>();
+        hitList.AddRange(Physics.RaycastAll(ray, 999, 3));
+
+        int idx = -1;
+        for(int i=0; i<hitList.Count; i++)
+        {
+            if (hitList[i].collider.gameObject.CompareTag("Tile"))
+            {
+                idx = i;
+                hit = hitList[idx];
+                break;
+            }
+        }
+
+        if (idx < 0)
         {
             HideCursor();
             success = false;
@@ -71,7 +88,7 @@ public class CursorComponent : MonoBehaviour
         else
         {
             ActiveCursor();
-            transform.position = Hit.collider.gameObject.transform.position;
+            transform.position = hitList[idx].collider.gameObject.transform.position;
             success = true;
         }
     }
@@ -94,29 +111,29 @@ public class CursorComponent : MonoBehaviour
             {
                 if (released_update)
                 {
-                    OnClickTile_Mid(Hit.collider.gameObject);
+                    OnClickTile_Mid(hit.collider.gameObject);
                     released_update = false;
                 }
                 else
                 {
-                    OnClickTile_Left(Hit.collider.gameObject);
+                    OnClickTile_Left(hit.collider.gameObject);
                 }
             }
             else if (Input.GetMouseButtonUp(1))
             {
                 if (released_update)
                 {
-                    OnClickTile_Mid(Hit.collider.gameObject);
+                    OnClickTile_Mid(hit.collider.gameObject);
                     released_update = false;
                 }
                 else
                 {
-                    OnClickTile_Right(Hit.collider.gameObject);
+                    OnClickTile_Right(hit.collider.gameObject);
                 }
             }
             else if (Input.GetMouseButtonUp(2))
             {
-                OnClickTile_Mid(Hit.collider.gameObject);
+                OnClickTile_Mid(hit.collider.gameObject);
             }
         }
     }

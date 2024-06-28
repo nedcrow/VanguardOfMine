@@ -10,6 +10,7 @@ public class MineMap : MonoBehaviour
     public event AfterSpawnMap_Del AfterSpawnMapEvent;
 
     public GameObject tilePrefab;
+    public GameObject minePrefab;
     public Vector3 tileSize = Vector3.one;
 
     [SerializeField]
@@ -18,7 +19,13 @@ public class MineMap : MonoBehaviour
     List<GameObject> activatedTileGameObjectList = new List<GameObject>();
     List<TileData> restedTileList = new List<TileData>();
     List<TileData> activatedTileList = new List<TileData>();
-    List<int> mineList;
+
+    [SerializeField]
+    List<MineComponent> restedMineList = new List<MineComponent>();
+    [SerializeField]
+    List<MineComponent> activatedMineList = new List<MineComponent>();
+    //List<int> mineList;
+    List<MineComponent> mineList;
     Vector3 pivot = Vector3.zero;
     Vector2Int mapSize = Vector2Int.zero;
 
@@ -45,7 +52,7 @@ public class MineMap : MonoBehaviour
 
         int tileCount = size.x * size.y;
 
-        // tile 및 mesh 초기화
+        // tile 초기화
         int currentCount = restedTileGameObjectList.Count + activatedTileGameObjectList.Count;
         if(currentCount == 0 && activatedTileGameObjectList.Count != tileCount)
         {
@@ -95,18 +102,47 @@ public class MineMap : MonoBehaviour
             }
         }
 
-        // mine
-        mineList = new List<int>();
-        while (mineList.Count < countOfMine)
+        // mine 초기화
+        if (activatedMineList.Count > 0)
+        {
+            while (activatedMineList.Count > 0)
+            {
+                restedMineList.Add(activatedMineList[^1]);
+                activatedMineList.RemoveAt(activatedMineList.Count - 1);
+            }
+        }
+        while (activatedMineList.Count < countOfMine)
         {
             int randomIndex = Random.Range(0, tileCount);
-            if (!mineList.Contains(randomIndex))
+            bool hasDuplicate = restedMineList.Any(mine => mine.GetIndex() == randomIndex);
+            if (!hasDuplicate)
             {
-                mineList.Add(randomIndex);
+                GameObject mineGameObj;
+                MineData mineData = new MineData(randomIndex, GameManager.instance.mineLevel);
+                if(restedMineList.Count <= 1)
+                {
+                    if (minePrefab)
+                    {
+                        mineGameObj = Instantiate(minePrefab);
+                        mineGameObj.GetComponent<MineComponent>().Init(mineData);
+                        activatedMineList.Add(mineGameObj.GetComponent<MineComponent>());
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Empty minePrefab");
+                    }                   
+                }
+                else
+                {
+                    restedMineList[^1].Init(mineData);
+                    activatedMineList.Add(restedMineList[^1]);
+                    restedMineList.RemoveAt(restedMineList.Count - 1);
+                }
                 activatedTileList[randomIndex].bHasMine = true;
             }
         }
 
+        // tile 설정
         activatedTileList.ForEach((TileData tile) => {
             if (!tile.bHasMine) {
                 int nearbyMineCount = 0;
@@ -123,10 +159,9 @@ public class MineMap : MonoBehaviour
         });
 
         // obstacle
-        // attach for mesh
 
-        // tile mesh setting
-        for(int i=0; i<activatedTileGameObjectList.Count; i++)
+        // tile game object setting
+        for (int i=0; i<activatedTileGameObjectList.Count; i++)
         {
             TileData tile = activatedTileList[i];
             GameObject tileGameObject = activatedTileGameObjectList[i];
@@ -148,6 +183,7 @@ public class MineMap : MonoBehaviour
             if (tileComp == null) tileComp = tileGameObject.AddComponent<TileComponent>();
             tileComp.ActiveCube();
             tileComp.Init(tile);
+            tileComp.SetTilePosition(new Vector2Int((int)posX, (int)posZ));
         }
 
         foreach (var tileGameObject in restedTileGameObjectList)
@@ -156,6 +192,18 @@ public class MineMap : MonoBehaviour
             if (tileComp == null) tileComp = tileGameObject.AddComponent<TileComponent>();
             tileComp.RestCube();
         }
+
+        // mine game object setting
+        activatedMineList.ForEach((MineComponent mine) => {
+            Vector3 tileGameObjectPosition = activatedTileGameObjectList[mine.GetIndex()].transform.localPosition;
+            mine.transform.parent = transform;
+            mine.transform.localPosition = tileGameObjectPosition;
+            mine.transform.localScale = tileSize * ((int)mine.GetMineType() * 2 - 1);
+            mine.SetMinePosition(new Vector2Int(
+                mine.GetIndex() % size.x,
+                Mathf.FloorToInt(mine.GetIndex() / size.x)
+                ));
+        });
 
         // map
         float mapX = (size.x * 0.5f) - (0.5f) * tileSize.x;

@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
 
     public GameTimer gameTimer;
     public MineMap mineMap;
-    public int mineLevel = 0;
+    public EMineType mineLevel = EMineType.normal;
 
     private void Awake()
     {
@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void GameOver() {
-        if(GameOverStateEvent.GetInvocationList().Length > 0) GameOverStateEvent();
+        //if(GameOverStateEvent.GetInvocationList().Length > 0) GameOverStateEvent();
+        GameOverStateEvent?.Invoke();
     }
 }

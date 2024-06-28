@@ -15,5 +15,4 @@ static class CommonStatics
         {7, Color.yellow },
         {8, Color.white },
     };
-
 }

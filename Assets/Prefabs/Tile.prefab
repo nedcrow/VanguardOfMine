@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4122097369121039553}
-  - component: {fileID: 3534609366567515348}
   - component: {fileID: 529026722381192773}
+  - component: {fileID: 3534609366567515348}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -35,6 +35,27 @@ Transform:
   - {fileID: 6043170798739612952}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &529026722381192773
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203640428869615302}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 3
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.84, y: 0.26, z: 0.84}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3534609366567515348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50,27 +71,9 @@ MonoBehaviour:
   tileMesh: {fileID: 9089187887309935891}
   defaultSizeOfCollider: {x: 1, y: 1, z: 1}
   text: {fileID: 4221112600365111929}
---- !u!65 &529026722381192773
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 203640428869615302}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.84, y: 0.24, z: 0.84}
-  m_Center: {x: 0, y: 0, z: 0}
+  mineType: 0
+  opened: 0
+  wasFlaged: 0
 --- !u!1 &3481689278627774463
 GameObject:
   m_ObjectHideFlags: 0

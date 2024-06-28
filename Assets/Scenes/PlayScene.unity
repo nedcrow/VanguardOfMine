@@ -762,9 +762,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 203640428869615302, guid: b98dca1183d69484195cd68441b91be7, type: 3}
+  minePrefab: {fileID: 777181628075399803, guid: 692aa0c1d29ebad44900c22f625c605f, type: 3}
   tileSize: {x: 1, y: 1, z: 1.48}
   restedTileGameObjectList: []
   activatedTileGameObjectList: []
+  restedMineList: []
+  activatedMineList: []
 --- !u!1 &803033846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1132,7 +1135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameTimer: {fileID: 38346095}
   mineMap: {fileID: 767301393}
-  mineLevel: 0
+  mineLevel: 1
 --- !u!4 &1366939851
 Transform:
   m_ObjectHideFlags: 0
@@ -1149,6 +1152,7 @@ Transform:
   - {fileID: 38346094}
   - {fileID: 767301392}
   - {fileID: 1384752559}
+  - {fileID: 2012061798}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1384752558
@@ -1162,7 +1166,7 @@ GameObject:
   - component: {fileID: 1384752559}
   - component: {fileID: 1384752560}
   m_Layer: 0
-  m_Name: ArmySpawner
+  m_Name: SoldierManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1195,9 +1199,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94bb9584782b6424a9321edcb990987a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentArmyPrefab: {fileID: 906074513049125708, guid: faa9ae9764cd2ad4d99dc8ee84e15081, type: 3}
-  restedArmies: []
-  activatedArmies: []
+  currentSoldierPrefab: {fileID: 906074513049125708, guid: faa9ae9764cd2ad4d99dc8ee84e15081, type: 3}
+  restedSoldiers: []
+  activatedSoldiers: []
 --- !u!1 &1543979546
 GameObject:
   m_ObjectHideFlags: 0
@@ -1368,6 +1372,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1951368881}
   m_CullTransparentMesh: 1
+--- !u!1 &2012061797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2012061798}
+  m_Layer: 0
+  m_Name: MineManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2012061798
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012061797}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -3.3437514, y: -3.2101552, z: 1.054367}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1366939851}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
