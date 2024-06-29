@@ -8,14 +8,18 @@ public class TileComponent : MonoBehaviour
     public Vector3 defaultSizeOfCollider = Vector3.one;
     public TextMeshProUGUI text;
     public EMineType mineType;
+    public int idx;
+    public int nearbyMineCount;
+    public bool hasMine = false;
     public bool opened = false;
     public bool wasFlaged = false;
 
-    TileData tileData;
     Vector2Int tilePosition;
 
     void OnTriggerEnter(Collider col)
-    {        
+    {
+        if (!col.transform.parent) return;
+
         CharacterCommon characterComp = col.transform.parent.GetComponent<CharacterCommon>();
         if (characterComp != null)
             DetectMine((int)characterComp.type);
@@ -23,13 +27,16 @@ public class TileComponent : MonoBehaviour
 
     public void Init(TileData tileData)
     {
-        SetTileData(tileData);
         transform.tag = "Tile";
 
         ChangeColor(Color.white);
 
-        opened = false;
+        idx = tileData.idx;
+        hasMine = tileData.bHasMine;
+        opened = tileData.bActivated;
+        nearbyMineCount = tileData.nearbyMineCount;
         wasFlaged = false;
+
         if (tileData.bHasMine)
         {
             text.text = "@";
@@ -44,8 +51,7 @@ public class TileComponent : MonoBehaviour
         text.transform.gameObject.SetActive(false);
     }
 
-    public void SetTileData(TileData tileData) { this.tileData = tileData; }
-    public TileData GetTileData() { return tileData; }
+    public TileData GetTileData() { return new TileData(idx,hasMine, opened,nearbyMineCount); }
 
     public void SetTilePosition(Vector2Int pos) {
         tilePosition = pos;
@@ -75,7 +81,7 @@ public class TileComponent : MonoBehaviour
 
         opened = true;
 
-        if (tileData.bHasMine)
+        if (hasMine)
         {
             //bool isBoomWeight = currentWeight >= (int) GameManager.instance.mineLevel;
             //if (isBoomWeight) {
@@ -87,33 +93,21 @@ public class TileComponent : MonoBehaviour
 
             int sizeX = GameManager.instance.mineMap.GetSize().x;
             int sizeY = GameManager.instance.mineMap.GetSize().y;
-            int[] aroundIdxArr = {
-                -sizeX-1, - sizeX, -sizeX+1, // ÁÂ»ó -> ¿ì»ó
-                -1, 1, // ÁÂ¿ì
-                sizeX-1, sizeX, sizeX+1  // ÁÂÇÏ -> ¿ìÇÏ
-                };
-
-            bool isEdgeHorizonL = tileData.idx % sizeX == 0 ? true : false;
-            bool isEdgeHorizonR = (tileData.idx - sizeX + 1) % sizeX == 0 ? true : false;
-            bool isEdgeVerticalT = tileData.idx < sizeX ? true : false;
-            bool isEdgeVerticalD = tileData.idx < sizeX * sizeY && tileData.idx > sizeX * sizeY - sizeX ? true : false;
+            int[] aroundIdxArr = GetAroundIdxArr();
 
             ChangeColor(Color.gray);
 
-            if (tileData.nearbyMineCount == 0)
+            if (nearbyMineCount == 0)
             {
                 foreach (int weight in aroundIdxArr)
                 {
-                    int nearbyIdx = tileData.idx + weight;
+                    int nearbyIdx = idx + weight;
                     if (nearbyIdx > -1 && nearbyIdx < sizeX * sizeY)
                     {
-                        bool isPass = (isEdgeHorizonL && (nearbyIdx == tileData.idx - 1 || nearbyIdx == tileData.idx - sizeX - 1 || nearbyIdx == tileData.idx + sizeX - 1))
-                            || (isEdgeHorizonR && (nearbyIdx == tileData.idx + 1 || nearbyIdx == tileData.idx - sizeX + 1 || nearbyIdx == tileData.idx + sizeX + 1))
-                            || (isEdgeVerticalT && (nearbyIdx == tileData.idx - sizeX || nearbyIdx == tileData.idx - sizeX - 1 || nearbyIdx == tileData.idx - sizeX + 1))
-                            || (isEdgeVerticalD && (nearbyIdx == tileData.idx + sizeX || nearbyIdx == tileData.idx + sizeX - 1 || nearbyIdx == tileData.idx + sizeX + 1));
+                        bool isPass = IsPassDetection(nearbyIdx);
                         if (!isPass)
                         {
-                            GameManager.instance.mineMap.GetTileCompAt(nearbyIdx).DetectMine(currentWeight);
+                            GameManager.instance.mineMap.tileSpawner.GetTileCompAt(nearbyIdx).DetectMine(currentWeight);
                         }
                     }
                 }
@@ -127,5 +121,72 @@ public class TileComponent : MonoBehaviour
         mats.AddRange(tileMesh.GetComponent<MeshRenderer>().materials);
         mats[0].color = color;
         tileMesh.GetComponent<MeshRenderer>().SetMaterials(mats);
+    }
+
+    public void ResetNearbyMineCount()
+    {
+        Vector2Int size = GameManager.instance.mineMap.GetSize();
+        int[] aroundIdxArr = GetAroundIdxArr();
+        nearbyMineCount = 0;
+        foreach (int weight in aroundIdxArr)
+        {
+            int nearbyIdx = idx + weight;
+
+            if (nearbyIdx > -1 && nearbyIdx < size.x * size.y - 1)
+            {
+                bool isPass = IsPassDetection(nearbyIdx);
+                if (!isPass)
+                {
+                    if (transform.GetComponentInParent<TileSpawner>().activatedGameObjects[nearbyIdx].GetComponent<TileComponent>().hasMine)
+                    {
+                        nearbyMineCount++;
+                    }
+                }
+
+            }
+        }
+
+        text.transform.gameObject.SetActive(true);
+        if (hasMine)
+        {
+            text.text = "@";
+            text.color = CommonStatics.mineColor[0];
+        }
+        else
+        {
+            text.text = nearbyMineCount != 0 ? nearbyMineCount.ToString() : "";
+            text.color = CommonStatics.mineColor[nearbyMineCount];
+        }
+        text.transform.gameObject.SetActive(false);
+    }
+
+    bool IsPassDetection(int nearbyIdx)
+    {
+        int sizeX = GameManager.instance.mineMap.GetSize().x;
+        int sizeY = GameManager.instance.mineMap.GetSize().y;
+
+        bool isEdgeHorizonL = idx % sizeX == 0 ? true : false;
+        bool isEdgeHorizonR = (idx - sizeX + 1) % sizeX == 0 ? true : false;
+        bool isEdgeVerticalT = idx < sizeX ? true : false;
+        bool isEdgeVerticalD = idx < sizeX * sizeY && idx > sizeX * sizeY - sizeX ? true : false;
+
+        bool isPass = (isEdgeHorizonL && (nearbyIdx == idx - 1 || nearbyIdx == idx - sizeX - 1 || nearbyIdx == idx + sizeX - 1))
+                            || (isEdgeHorizonR && (nearbyIdx == idx + 1 || nearbyIdx == idx - sizeX + 1 || nearbyIdx == idx + sizeX + 1))
+                            || (isEdgeVerticalT && (nearbyIdx == idx - sizeX || nearbyIdx == idx - sizeX - 1 || nearbyIdx == idx - sizeX + 1))
+                            || (isEdgeVerticalD && (nearbyIdx == idx + sizeX || nearbyIdx == idx + sizeX - 1 || nearbyIdx == idx + sizeX + 1));
+
+        return isPass;
+    }
+
+    int[] GetAroundIdxArr()
+    {
+        int sizeX = GameManager.instance.mineMap.GetSize().x;
+        int sizeY = GameManager.instance.mineMap.GetSize().y;
+        int[] aroundIdxArr = {
+                -sizeX-1, - sizeX, -sizeX+1, // ÁÂ»ó -> ¿ì»ó
+                -1, 1, // ÁÂ¿ì
+                sizeX-1, sizeX, sizeX+1  // ÁÂÇÏ -> ¿ìÇÏ
+                };
+        return aroundIdxArr;
     }
 }

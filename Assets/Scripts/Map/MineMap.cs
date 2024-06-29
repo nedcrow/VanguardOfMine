@@ -9,25 +9,12 @@ public class MineMap : MonoBehaviour
     public delegate void AfterSpawnMap_Del();
     public event AfterSpawnMap_Del AfterSpawnMapEvent;
 
-    public GameObject tilePrefab;
-    public GameObject minePrefab;
+    public TileSpawner tileSpawner;
+    public MineSpawner mineSpawner;
+    public SoldierSpawner soldierSpawner;
     public Vector3 tileSize = Vector3.one;
 
-    [SerializeField]
-    List<GameObject> restedTileGameObjectList = new List<GameObject>();
-    [SerializeField]
-    List<GameObject> activatedTileGameObjectList = new List<GameObject>();
-    List<TileData> restedTileList = new List<TileData>();
-    List<TileData> activatedTileList = new List<TileData>();
-
-    [SerializeField]
-    List<MineComponent> restedMineList = new List<MineComponent>();
-    [SerializeField]
-    List<MineComponent> activatedMineList = new List<MineComponent>();
-    //List<int> mineList;
-    List<MineComponent> mineList;
-    Vector3 pivot = Vector3.zero;
-    Vector2Int mapSize = Vector2Int.zero;
+    Vector2Int size = Vector2Int.zero;
 
     void Start()
     {
@@ -40,137 +27,28 @@ public class MineMap : MonoBehaviour
         Debug.Log("GameOver");
     }
 
-    public void Spawn(Vector2Int size, int countOfMine)
+    public void DrawMap(Vector2Int size, int countOfMine)
     {
-        mapSize = size;
-
+        this.size = size;
+        int tileCount = size.x * size.y;
         int[] aroundIdxArr = {
             -size.x-1, -size.x, -size.x +1, // 좌상단 -> 우상단
             -1, 0, 1, // 좌 -> 우
             size.x - 1, size.x, size.x +1, // 좌하단 -> 우하단
         };
 
-        int tileCount = size.x * size.y;
-
-        // tile 초기화
-        int currentCount = restedTileGameObjectList.Count + activatedTileGameObjectList.Count;
-        if(currentCount == 0 && activatedTileGameObjectList.Count != tileCount)
+        #region TileMap
+        tileSpawner.ReadyTileComponents(tileCount);
+        List<GameObject> activatedTiles = tileSpawner.activatedGameObjects;
+        for (int i = 0; i < activatedTiles.Count; i++)
         {
-            for (int i = 0; i < tileCount; i++)
-            {
-                TileData tileData = new TileData(i, false, false, 0);
-                activatedTileList.Add(tileData);
+            TileData tileData = activatedTiles[i].GetComponent<TileComponent>().GetTileData();
+            GameObject tileGameObject = activatedTiles[i];
 
-                activatedTileGameObjectList.Add(Instantiate(tilePrefab));
-            }
-        }
-        else if(activatedTileGameObjectList.Count < tileCount)
-        {
-            // 활성 타일이 부족하면 비활성 타일에서 추가
-            while(activatedTileGameObjectList.Count < tileCount && restedTileGameObjectList.Count > 0)
-            {
-                activatedTileList.Add(restedTileList[^1]);
-                restedTileList.RemoveAt(restedTileList.Count-1);
+            float posX = (tileData.idx % size.x);
+            float posY = 0;
+            float posZ = Mathf.Floor(tileData.idx / size.x);
 
-                activatedTileGameObjectList.Add(restedTileGameObjectList[^1]);
-                restedTileGameObjectList.RemoveAt(restedTileGameObjectList.Count - 1);
-            }
-
-            // 그래도 부족하면 추가 생성
-            int tempDistance_ = tileCount - activatedTileGameObjectList.Count;
-            int idx = activatedTileList[^1].idx;
-            while (tempDistance_ > 0)
-            {
-                idx += 1;
-                TileData tileData = new TileData(idx, false, false, 0);
-                activatedTileList.Add(tileData);
-
-                activatedTileGameObjectList.Add(Instantiate(tilePrefab));
-                tempDistance_--;
-            }
-        }
-        else if(activatedTileGameObjectList.Count > tileCount)
-        {
-            // 남는 타일 비활성
-            while (activatedTileGameObjectList.Count > tileCount)
-            {
-                restedTileList.Add(activatedTileList[^1]);
-                activatedTileList.RemoveAt(activatedTileList.Count - 1);
-
-                restedTileGameObjectList.Add(activatedTileGameObjectList[^1]);
-                activatedTileGameObjectList.RemoveAt(activatedTileGameObjectList.Count - 1);
-            }
-        }
-
-        // mine 초기화
-        if (activatedMineList.Count > 0)
-        {
-            while (activatedMineList.Count > 0)
-            {
-                restedMineList.Add(activatedMineList[^1]);
-                activatedMineList.RemoveAt(activatedMineList.Count - 1);
-            }
-        }
-        while (activatedMineList.Count < countOfMine)
-        {
-            int randomIndex = Random.Range(0, tileCount);
-            bool hasDuplicate = restedMineList.Any(mine => mine.GetIndex() == randomIndex);
-            if (!hasDuplicate)
-            {
-                GameObject mineGameObj;
-                MineData mineData = new MineData(randomIndex, GameManager.instance.mineLevel);
-                if(restedMineList.Count <= 1)
-                {
-                    if (minePrefab)
-                    {
-                        mineGameObj = Instantiate(minePrefab);
-                        mineGameObj.GetComponent<MineComponent>().Init(mineData);
-                        activatedMineList.Add(mineGameObj.GetComponent<MineComponent>());
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Empty minePrefab");
-                    }                   
-                }
-                else
-                {
-                    restedMineList[^1].Init(mineData);
-                    activatedMineList.Add(restedMineList[^1]);
-                    restedMineList.RemoveAt(restedMineList.Count - 1);
-                }
-                activatedTileList[randomIndex].bHasMine = true;
-            }
-        }
-
-        // tile 설정
-        activatedTileList.ForEach((TileData tile) => {
-            if (!tile.bHasMine) {
-                int nearbyMineCount = 0;
-                foreach (int weight in aroundIdxArr)
-                {
-                    int nearbyIdx = tile.idx + weight;
-                    if (nearbyIdx > -1 && nearbyIdx < activatedTileList.Count)
-                    {
-                        if (activatedTileList[nearbyIdx].bHasMine) nearbyMineCount++;
-                    }
-                }
-                tile.nearbyMineCount = nearbyMineCount;
-            };
-        });
-
-        // obstacle
-
-        // tile game object setting
-        for (int i=0; i<activatedTileGameObjectList.Count; i++)
-        {
-            TileData tile = activatedTileList[i];
-            GameObject tileGameObject = activatedTileGameObjectList[i];
-
-            float posX = pivot.x + (tile.idx % size.x);
-            float posY = pivot.y;
-            float posZ = pivot.z + Mathf.Floor(tile.idx / size.x);
-
-            tileGameObject.transform.parent = transform;
             tileGameObject.name = posX.ToString() + " x " + posZ.ToString();
             tileGameObject.transform.localPosition = new Vector3(
                 posX * tileSize.x,
@@ -182,28 +60,60 @@ public class MineMap : MonoBehaviour
             TileComponent tileComp = tileGameObject.GetComponent<TileComponent>();
             if (tileComp == null) tileComp = tileGameObject.AddComponent<TileComponent>();
             tileComp.ActiveCube();
-            tileComp.Init(tile);
             tileComp.SetTilePosition(new Vector2Int((int)posX, (int)posZ));
         }
 
-        foreach (var tileGameObject in restedTileGameObjectList)
+        foreach (var tileGameObject in tileSpawner.restedGameObjects)
         {
             TileComponent tileComp = tileGameObject.GetComponent<TileComponent>();
             if (tileComp == null) tileComp = tileGameObject.AddComponent<TileComponent>();
             tileComp.RestCube();
         }
+        #endregion
 
-        // mine game object setting
-        activatedMineList.ForEach((MineComponent mine) => {
-            Vector3 tileGameObjectPosition = activatedTileGameObjectList[mine.GetIndex()].transform.localPosition;
-            mine.transform.parent = transform;
+        #region LocateMine
+        List<int> mineIndexList = new List<int>();
+        mineSpawner.ReadyMineComponents(countOfMine);
+        mineSpawner.activatedGameObjects.ForEach((GameObject mine) => {
+            bool hasDuplicate = true;
+            int randomIndex = Random.Range(0, tileCount);
+            while (hasDuplicate)
+            {
+                randomIndex = Random.Range(0, tileCount);
+                hasDuplicate = mineIndexList.Contains(randomIndex);
+            }
+            mineIndexList.Add(randomIndex);
+        });
+
+        for(int i=0; i<mineIndexList.Count; i++)
+        {
+            mineSpawner.activatedGameObjects[i].GetComponent<MineComponent>().Init(
+                new MineData(mineIndexList[i], GameManager.instance.mineLevel)
+                );
+        }
+
+        mineSpawner.activatedGameObjects.ForEach((GameObject mine) =>
+        {
+            MineComponent mineComp = mine.GetComponent<MineComponent>();
+            TileComponent tileComp = tileSpawner.activatedGameObjects[mineComp.GetIndex()].GetComponent<TileComponent>();
+            Vector3 tileGameObjectPosition = tileComp.transform.localPosition;
+            tileComp.hasMine = true;
             mine.transform.localPosition = tileGameObjectPosition;
-            mine.transform.localScale = tileSize * ((int)mine.GetMineType() * 2 - 1);
-            mine.SetMinePosition(new Vector2Int(
-                mine.GetIndex() % size.x,
-                Mathf.FloorToInt(mine.GetIndex() / size.x)
+            mine.transform.localScale = tileSize * ((int)mineComp.GetMineType() * 2 - 1);
+            mineComp.SetMinePosition(new Vector2Int(
+                mineComp.GetIndex() % size.x,
+                Mathf.FloorToInt(mineComp.GetIndex() / size.x)
                 ));
         });
+        #endregion
+
+        #region DetectNearbyMineCount
+        tileSpawner.activatedGameObjects.ForEach(
+            (GameObject value) => value.GetComponent<TileComponent>().ResetNearbyMineCount()
+            );
+        #endregion
+
+        // obstacle
 
         // map
         float mapX = (size.x * 0.5f) - (0.5f) * tileSize.x;
@@ -219,12 +129,7 @@ public class MineMap : MonoBehaviour
 
     public Vector2Int GetSize()
     {
-        return mapSize;
-    }
-
-    public TileComponent GetTileCompAt(int idx)
-    {
-        return activatedTileGameObjectList[idx].GetComponent<TileComponent>();
+        return size;
     }
 }
 

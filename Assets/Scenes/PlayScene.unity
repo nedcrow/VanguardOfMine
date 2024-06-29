@@ -747,7 +747,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 227909309}
-  m_Father: {fileID: 1366939851}
+  - {fileID: 1856367012}
+  - {fileID: 2012061798}
+  - {fileID: 1384752559}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &767301393
 MonoBehaviour:
@@ -761,13 +764,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cbed12ba400a1d489759f2a6a89b27c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilePrefab: {fileID: 203640428869615302, guid: b98dca1183d69484195cd68441b91be7, type: 3}
-  minePrefab: {fileID: 777181628075399803, guid: 692aa0c1d29ebad44900c22f625c605f, type: 3}
+  tileSpawner: {fileID: 1856367013}
+  mineSpawner: {fileID: 2012061799}
+  soldierSpawner: {fileID: 1384752560}
   tileSize: {x: 1, y: 1, z: 1.48}
-  restedTileGameObjectList: []
-  activatedTileGameObjectList: []
-  restedMineList: []
-  activatedMineList: []
 --- !u!1 &803033846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1150,9 +1150,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 38346094}
-  - {fileID: 767301392}
-  - {fileID: 1384752559}
-  - {fileID: 2012061798}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1384752558
@@ -1185,7 +1182,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1366939851}
+  m_Father: {fileID: 767301392}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1384752560
 MonoBehaviour:
@@ -1199,9 +1196,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94bb9584782b6424a9321edcb990987a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentSoldierPrefab: {fileID: 906074513049125708, guid: faa9ae9764cd2ad4d99dc8ee84e15081, type: 3}
-  restedSoldiers: []
-  activatedSoldiers: []
+  targetPrefab: {fileID: 906074513049125708, guid: faa9ae9764cd2ad4d99dc8ee84e15081, type: 3}
+  restedGameObjects: []
+  activatedGameObjects: []
+  maxCount: 999
+  idxList: 
 --- !u!1 &1543979546
 GameObject:
   m_ObjectHideFlags: 0
@@ -1251,6 +1250,55 @@ Transform:
   - {fileID: 803033847}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1856367011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1856367012}
+  - component: {fileID: 1856367013}
+  m_Layer: 0
+  m_Name: TileManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1856367012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1856367011}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 767301392}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1856367013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1856367011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7ceb267d421ea04388900041107fabe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetPrefab: {fileID: 203640428869615302, guid: b98dca1183d69484195cd68441b91be7, type: 3}
+  restedGameObjects: []
+  activatedGameObjects: []
+  maxCount: 999
+  idxList: 
 --- !u!1 &1951368881
 GameObject:
   m_ObjectHideFlags: 0
@@ -1381,6 +1429,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2012061798}
+  - component: {fileID: 2012061799}
   m_Layer: 0
   m_Name: MineManager
   m_TagString: Untagged
@@ -1397,12 +1446,30 @@ Transform:
   m_GameObject: {fileID: 2012061797}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.3437514, y: -3.2101552, z: 1.054367}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1366939851}
+  m_Father: {fileID: 767301392}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2012061799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012061797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45a3736dd52e038449ced15fec1850f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetPrefab: {fileID: 777181628075399803, guid: 692aa0c1d29ebad44900c22f625c605f, type: 3}
+  restedGameObjects: []
+  activatedGameObjects: []
+  maxCount: 999
+  idxList: 
+  soldiersInRange: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1413,3 +1480,4 @@ SceneRoots:
   - {fileID: 502683012}
   - {fileID: 840549384}
   - {fileID: 1543979548}
+  - {fileID: 767301392}

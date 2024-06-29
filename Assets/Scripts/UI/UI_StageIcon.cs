@@ -24,6 +24,6 @@ public class UI_StageIcon : MonoBehaviour
     public void StartStage()
     {
 
-        GameManager.instance.mineMap.Spawn(Vector2Int.one * (10 + stageLevel), 20);
+        GameManager.instance.mineMap.DrawMap(Vector2Int.one * (10 + stageLevel), 20);
     }
 }

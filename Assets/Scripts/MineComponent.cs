@@ -20,6 +20,7 @@ public class MineComponent : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
+        if (!col.transform.parent) return;
         CharacterCommon characterComp = col.transform.parent.GetComponent<CharacterCommon>();
         if (characterComp != null && !soldierListInRange.Contains(characterComp.gameObject))
         {

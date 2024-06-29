@@ -71,7 +71,7 @@ MonoBehaviour:
   tileMesh: {fileID: 9089187887309935891}
   defaultSizeOfCollider: {x: 1, y: 1, z: 1}
   text: {fileID: 4221112600365111929}
-  mineType: 0
+  mineType: 1
   opened: 0
   wasFlaged: 0
 --- !u!1 &3481689278627774463
